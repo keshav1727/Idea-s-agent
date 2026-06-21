@@ -12,7 +12,7 @@ from pathlib import Path
 
 from src.schema import ContentItem
 
-MAX_AGE_DAYS = 90
+MAX_AGE_DAYS = 1
 
 STRONG_CRYPTO_KEYWORDS = {
     "bitcoin", "btc", "ethereum", "eth", "solana", "cryptocurrency",
@@ -31,9 +31,9 @@ WEAK_CRYPTO_KEYWORDS = {
 }
 
 VIRAL_THRESHOLDS = {
-    "youtube": {"views": 100_000},
-    "reddit": {"score": 100},
-    "twitter": {"likes": 50},
+    "youtube": {"views": 1_000},
+    "reddit": {"score": 20},
+    "twitter": {"likes": 10},
     "news": None,
     "social": None,
 }

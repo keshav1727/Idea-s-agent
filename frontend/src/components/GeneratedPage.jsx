@@ -1,4 +1,5 @@
 import IdeaSection from './IdeaSection';
+import ScriptSection from './ScriptSection';
 import HookTemplates from './HookTemplates';
 import Patterns from './Patterns';
 import Trends from './Trends';
@@ -20,6 +21,7 @@ export default function GeneratedPage({ ideas, patterns, onGenerated, showToast 
       <IdeaSection title="📸 Instagram Reel Ideas" items={ideas.instagram_reels || []} icon="📸" section="reels" btnLabel="Generate Reel Ideas" onGenerated={onGenerated} showToast={showToast} />
       <IdeaSection title="▶️ YouTube Video Ideas" items={ideas.youtube_videos || []} icon="▶️" section="videos" btnLabel="Generate Video Ideas" onGenerated={onGenerated} showToast={showToast} />
       <IdeaSection title="🐦 Twitter Thread Ideas" items={ideas.twitter_threads || []} icon="🐦" section="threads" btnLabel="Generate Thread Ideas" onGenerated={onGenerated} showToast={showToast} />
+      <ScriptSection reelScripts={ideas.reel_scripts || []} videoScripts={ideas.video_scripts || []} onGenerated={onGenerated} showToast={showToast} />
       <HookTemplates hooks={ideas.viral_hooks || []} onGenerated={onGenerated} showToast={showToast} />
       <Trends topics={ideas.trending_web3_topics || []} />
       <Patterns patterns={patterns} />

@@ -127,6 +127,28 @@ def regenerate_section(section_key: str) -> None:
     print(f"[Regenerate] {section_key}: done")
 
 
+def regenerate_scripts() -> None:
+    """Regenerate scripts for existing ideas."""
+    from src.generator.content_ideas import get_llm_client, generate_scripts
+
+    ideas_path = OUTPUT / "ideas.json"
+    if not ideas_path.exists():
+        raise RuntimeError("No ideas found. Generate ideas first.")
+
+    ideas = json.loads(ideas_path.read_text())
+    client, backend = get_llm_client()
+    print(f"[Scripts] Generating using {backend}")
+
+    scripts = generate_scripts(client, ideas)
+    if scripts:
+        ideas["reel_scripts"] = scripts.get("reel_scripts", [])
+        ideas["video_scripts"] = scripts.get("video_scripts", [])
+        _write_json(ideas_path, ideas)
+        print("[Scripts] Done")
+    else:
+        raise RuntimeError("LLM failed to generate scripts")
+
+
 def _write_json(path: Path, data) -> None:
     with open(path, "w") as f:
         json.dump(data, f, indent=2, default=str)
@@ -156,6 +178,7 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             "/api/generate/videos": lambda: regenerate_section("youtube_videos"),
             "/api/generate/threads": lambda: regenerate_section("twitter_threads"),
             "/api/generate/hooks": lambda: regenerate_section("hooks_and_trends"),
+            "/api/generate/scripts": regenerate_scripts,
             "/api/refresh": refresh_data,
         }
         fn = routes.get(self.path)

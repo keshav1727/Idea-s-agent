@@ -154,6 +154,54 @@ Return a JSON object with these 2 keys. Example:
 Return ONLY the JSON object."""
 
 
+SCRIPT_PROMPT = """Here are content ideas generated for a crypto education channel. Write a SHORT SCRIPT for each one.
+
+{ideas_text}
+
+---
+
+For each idea, write a short production script — what the creator actually says and shows, beat by beat.
+
+Rules:
+- Instagram Reels: 30-60 seconds. Write exactly what appears on screen + voiceover for each beat. 6 beats max.
+- YouTube Videos: Write the opening 2 minutes + section headers with 1-2 sentence descriptions. 8 sections max.
+- Twitter Threads: Already have full tweets — skip these.
+
+Return a JSON object with these keys:
+- "reel_scripts": array of objects, one per reel. Each has "topic" (string, match the original idea) and "script" (array of strings — each string is one beat with format "VISUAL: ... | VO: ...")
+- "video_scripts": array of objects, one per video. Each has "topic" (string) and "script" (array of strings — each string is one section with format "SECTION: title | CONTENT: what to say/show")
+
+Example:
+{{
+  "reel_scripts": [
+    {{
+      "topic": "Memecoin trading rules",
+      "script": [
+        "VISUAL: Portfolio screenshot showing $2M | VO: This portfolio started with just $500",
+        "VISUAL: Calendar showing 18 months | VO: 18 months ago, one trader made a bet",
+        "VISUAL: Rule 1 text on screen | VO: Rule 1 — never invest in tokens without a real community",
+        "VISUAL: Rule 2 text on screen | VO: Rule 2 — always take profits at 10x",
+        "VISUAL: Rule 3 text on screen | VO: Rule 3 — never use leverage on memecoins",
+        "VISUAL: Follow button animation | VO: Follow for more crypto alpha"
+      ]
+    }}
+  ],
+  "video_scripts": [
+    {{
+      "topic": "On-chain analysis of winning strategies",
+      "script": [
+        "SECTION: Cold Open | CONTENT: Show the most profitable wallet on-screen — $1K turned into $4M. Ask: what did this wallet do differently?",
+        "SECTION: Methodology | CONTENT: Explain tools used — Arkham, Nansen, Dune. 1000 wallets analyzed over 2 years.",
+        "SECTION: Pattern 1 — Early LP | CONTENT: These wallets provided liquidity in the first week of new protocols. Show 3 real examples with returns.",
+        "SECTION: Pattern 2 — Fear Buying | CONTENT: Every single top wallet accumulated during 40%+ drawdowns. Show the correlation chart."
+      ]
+    }}
+  ]
+}}
+
+Write scripts for ALL ideas provided above. Return ONLY the JSON object."""
+
+
 def get_llm_client() -> tuple[LLMClient, str]:
     """Select the best available LLM backend."""
     backend = os.getenv("LLM_BACKEND", "ollama").lower()
@@ -226,9 +274,44 @@ def generate_ideas(patterns: PatternReport) -> dict[str, Any]:
             else:
                 ideas[key] = []
 
+    # Generate scripts for all ideas
+    scripts = generate_scripts(client, ideas)
+    if scripts:
+        ideas["reel_scripts"] = scripts.get("reel_scripts", [])
+        ideas["video_scripts"] = scripts.get("video_scripts", [])
+
     total = len(ideas.get("instagram_reels", [])) + len(ideas.get("youtube_videos", [])) + len(ideas.get("twitter_threads", []))
-    print(f"  [generator] Total: {total} content ideas generated")
+    print(f"  [generator] Total: {total} content ideas + scripts generated")
     return ideas
+
+
+def generate_scripts(client: LLMClient, ideas: dict[str, Any]) -> dict | None:
+    """Generate short scripts for all existing ideas."""
+    reels = ideas.get("instagram_reels", [])
+    videos = ideas.get("youtube_videos", [])
+    if not reels and not videos:
+        return None
+
+    lines = []
+    if reels:
+        lines.append("INSTAGRAM REEL IDEAS:")
+        for i, r in enumerate(reels, 1):
+            lines.append(f"  Reel {i}: Hook: {r.get('hook','')} | Topic: {r.get('topic','')} | Angle: {r.get('angle','')}")
+    if videos:
+        lines.append("\nYOUTUBE VIDEO IDEAS:")
+        for i, v in enumerate(videos, 1):
+            lines.append(f"  Video {i}: Hook: {v.get('hook','')} | Topic: {v.get('topic','')} | Angle: {v.get('angle','')}")
+
+    ideas_text = "\n".join(lines)
+    prompt = SCRIPT_PROMPT.format(ideas_text=ideas_text)
+
+    print(f"  [generator] Generating scripts...")
+    result = _call_with_retry(client, prompt, dict)
+    if result:
+        print(f"  [generator] Scripts: OK")
+    else:
+        print(f"  [generator] Scripts: FAILED")
+    return result
 
 
 def _call_with_retry(client: LLMClient, prompt: str, expected_type: type, retries: int = 2) -> Any:

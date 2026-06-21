@@ -30,15 +30,15 @@ Stage 1: COLLECT          Stage 2: ANALYZE          Stage 3: GENERATE         St
 
 ```
 ├── main.py                     # CLI entrypoint — runs full pipeline
-├── dashboard.py                # Web dashboard with Generate button
+├── dashboard.py                # API server + serves React build
 ├── src/
 │   ├── schema.py               # ContentItem dataclass + engagement normalization
 │   ├── collectors/
 │   │   ├── base.py             # Base collector with date/crypto/viral filters
 │   │   ├── youtube.py          # YouTube Data API v3 collector
-│   │   ├── reddit.py           # Reddit RSS collector
+│   │   ├── reddit.py           # Reddit HTML scraper (real upvotes/comments)
 │   │   ├── news.py             # Crypto news RSS (CoinDesk, Cointelegraph, Decrypt)
-│   │   └── twitter.py          # Twitter API v2 + Google News fallback
+│   │   └── twitter.py          # Twitter API v2 (needs paid Basic plan)
 │   ├── analysis/
 │   │   └── patterns.py         # Hook detection, TF-IDF topics, narrative analysis
 │   ├── generator/
@@ -46,9 +46,13 @@ Stage 1: COLLECT          Stage 2: ANALYZE          Stage 3: GENERATE         St
 │   │   └── content_ideas.py    # Prompt engineering + idea generation
 │   └── output/
 │       └── renderer.py         # Markdown report renderer
-├── data/samples/               # Sample data for offline testing
-├── templates/
-│   └── dashboard.html          # Web dashboard UI
+├── frontend/                   # React + Vite + Tailwind CSS
+│   ├── src/
+│   │   ├── App.jsx             # Main app with tab routing
+│   │   ├── api.js              # API client functions
+│   │   └── components/         # FetchedPage, GeneratedPage, IdeaSection, etc.
+│   ├── vite.config.js
+│   └── package.json
 ├── requirements.txt
 ├── .env.example
 └── .gitignore
@@ -104,9 +108,10 @@ python main.py
 
 **Dashboard:**
 ```bash
+cd frontend && npm install && npm run build && cd ..
 python dashboard.py
 ```
-Opens a web dashboard at `http://localhost:8050` with a Generate button that runs the full pipeline.
+Opens a web dashboard at `http://localhost:8050`. Fetched data auto-refreshes on page load. Each idea section (Reels, Videos, Threads, Hooks) has its own Generate button.
 
 ## Output
 
@@ -158,9 +163,9 @@ The Generate button runs the full pipeline in a background thread and updates th
 
 - **Separate LLM calls per content type**: Instead of one large prompt asking for all content types, the generator makes 4 separate LLM calls (Reels, Videos, Threads, Hooks). This produces higher quality output from smaller models like llama3 8B.
 
-- **Sample data fallback**: Each collector falls back to curated sample data if live fetching fails. This ensures the pipeline always produces output, useful for development and demos.
+- **No hardcoded fallback**: If a source fails (API quota, auth denied, network error), it returns zero items and logs the reason. No fake/sample data is ever shown.
 
-- **Stdlib HTTP server**: The dashboard uses Python's built-in `http.server` instead of Flask/FastAPI. Zero additional dependencies for the web interface.
+- **React + Tailwind frontend**: Vite + React for the dashboard, Tailwind CSS for styling. Built to `frontend/dist/` and served by the Python stdlib HTTP server — no Flask/FastAPI dependency.
 
 ## Limitations
 

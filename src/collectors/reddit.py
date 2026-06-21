@@ -12,7 +12,7 @@ from src.schema import ContentItem, normalize_engagement
 from src.collectors.base import BaseCollector
 
 SUBREDDITS = ["CryptoCurrency", "Bitcoin", "ethereum"]
-SORT_MODES = [("top", "?t=month")]
+SORT_MODES = [("hot", ""), ("top", "?t=day")]
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
                   "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",

@@ -9,12 +9,14 @@ from src.schema import ContentItem, normalize_engagement
 from src.collectors.base import BaseCollector, MAX_AGE_DAYS
 
 SEARCH_QUERIES = [
-    "bitcoin cryptocurrency viral",
-    "altcoin memecoin crypto trading",
-    "ethereum solana defi blockchain",
-    "crypto india bitcoin hindi",
-    "bitcoin etf crypto bull run 2026",
-    "crypto scam exposed web3",
+    "bitcoin explained for beginners",
+    "how blockchain works",
+    "what is defi explained",
+    "crypto knowledge you need",
+    "ethereum vs solana explained",
+    "why bitcoin matters",
+    "web3 explained simply",
+    "crypto investing mistakes",
 ]
 
 
@@ -36,8 +38,9 @@ class YouTubeCollector(BaseCollector):
             try:
                 resp = youtube.search().list(
                     q=query, part="id", type="video",
-                    order="viewCount", maxResults=10,
+                    order="relevance", maxResults=10,
                     publishedAfter=cutoff,
+                    videoDuration="medium",
                 ).execute()
                 video_ids.extend(
                     item["id"]["videoId"]

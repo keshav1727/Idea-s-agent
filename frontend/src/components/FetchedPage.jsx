@@ -58,7 +58,7 @@ export default function FetchedPage({ collected, sourceStatus, refreshing }) {
       <div className="mb-9">
         <div className="flex items-center gap-2 text-[15px] font-bold text-gray-900 mb-3.5 pb-2 border-b border-gray-200">
           Scraped Viral Content
-          <span className="text-[11px] font-medium text-gray-400 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded-full">Last 90 days</span>
+          <span className="text-[11px] font-medium text-gray-400 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded-full">Last 24 hours</span>
         </div>
         <div className="flex gap-1.5 mb-3 flex-wrap">
           <FilterBtn active={filter === 'all'} onClick={() => setFilter('all')}>All</FilterBtn>
@@ -88,9 +88,8 @@ function StatCard({ num, label, ok }) {
 function FilterBtn({ active, onClick, children }) {
   return (
     <button
-      className={`px-3.5 py-1 text-xs font-medium rounded cursor-pointer transition-all border ${
-        active ? 'bg-blue-50 border-blue-500 text-blue-600' : 'bg-gray-50 border-gray-200 text-gray-400 hover:text-gray-600'
-      }`}
+      className={`px-3.5 py-1 text-xs font-medium rounded cursor-pointer transition-all border ${active ? 'bg-blue-50 border-blue-500 text-blue-600' : 'bg-gray-50 border-gray-200 text-gray-400 hover:text-gray-600'
+        }`}
       onClick={onClick}
     >{children}</button>
   );
